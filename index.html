@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a84ff">
+    <link rel="manifest" href="manifest.json">
+    <title>PDF Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <header id="toolbar" class="toolbar">
+            <div class="toolbar-left">
+                <label class="btn btn-primary file-input-label">
+                    <i class="fas fa-folder-open"></i> <span class="hide-mobile">Open PDF</span>
+                    <input type="file" id="file-input" accept="application/pdf" hidden>
+                </label>
+                <span id="file-name" class="file-name hide-mobile">No file chosen</span>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="search-wrapper">
+                    <button id="search-toggle" class="btn icon-btn" title="Search" disabled>
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div id="search-bar" class="search-bar" style="display: none;">
+                        <input type="text" id="search-input" placeholder="Search document..." disabled>
+                        <span id="search-results-count">0/0</span>
+                        <button id="search-prev" class="btn icon-btn btn-small" title="Previous Result"><i class="fas fa-arrow-up"></i></button>
+                        <button id="search-next" class="btn icon-btn btn-small" title="Next Result"><i class="fas fa-arrow-down"></i></button>
+                        <button id="search-close" class="btn icon-btn btn-small" title="Close Search"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                
+                <div class="zoom-controls hide-mobile">
+                    <button id="zoom-out" class="btn icon-btn" title="Zoom Out" disabled><i class="fas fa-minus"></i></button>
+                    <span id="zoom-val">100%</span>
+                    <button id="zoom-in" class="btn icon-btn" title="Zoom In" disabled><i class="fas fa-plus"></i></button>
+                </div>
+
+                <button id="bookmark-btn" class="btn icon-btn" title="Bookmark Page" disabled>
+                    <i class="far fa-bookmark"></i>
+                </button>
+                <button id="theme-toggle" class="btn icon-btn" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="fullscreen-toggle" class="btn icon-btn hide-mobile" title="Fullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </header>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <main id="main-container">
+            <!-- Empty state -->
+            <div id="empty-state">
+                <div class="empty-icon"><i class="fas fa-file-pdf"></i></div>
+                <h2>Welcome to PDF Viewer</h2>
+                <p>Open a PDF file to start reading</p>
+                <label class="btn btn-large btn-primary mt-4">
+                    Choose File
+                    <input type="file" id="empty-file-input" accept="application/pdf" hidden>
+                </label>
+            </div>
+
+            <div id="viewer-wrapper">
+                <div id="viewer" class="book-mode">
+                    <!-- Canvas elements will be rendered here -->
+                </div>
+            </div>
+            
+            <!-- Sidebar Drawer for TOC and Bookmarks -->
+            <div id="side-drawer" class="side-drawer">
+                <div class="drawer-header">
+                    <button id="tab-toc" class="drawer-tab active">Outline</button>
+                    <button id="tab-bookmarks" class="drawer-tab">Bookmarks</button>
+                    <button id="close-drawer" class="btn icon-btn"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="drawer-content">
+                    <div id="toc-view" class="drawer-view active"></div>
+                    <div id="bookmarks-view" class="drawer-view"></div>
+                </div>
+            </div>
+            
+            <!-- Mobile Tap Zones for Book Mode -->
+            <div id="tap-zone-left" class="tap-zone"></div>
+            <div id="tap-zone-right" class="tap-zone"></div>
+        </main>
+
+        <!-- Bottom Navigation Bar (Optimized for Mobile Reachability) -->
+        <nav id="bottom-bar" class="bottom-bar">
+            <button id="mode-toggle" class="btn icon-btn" title="Toggle Book/Scroll Mode" disabled>
+                <i class="fas fa-book-open"></i>
+            </button>
+            
+            <div class="page-nav">
+                <button id="prev-btn" class="btn icon-btn" title="Previous Page" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="page-info">
+                    <input type="number" id="page-num" value="0" min="1" disabled>
+                    <span>/</span>
+                    <span id="page-count">0</span>
+                    <span id="progress-text" class="hide-mobile" style="margin-left: 8px; font-size: 11px; opacity: 0.8;"></span>
+                </div>
+                <button id="next-btn" class="btn icon-btn" title="Next Page" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <button id="toc-toggle" class="btn icon-btn" title="Table of Contents" disabled>
+                <i class="fas fa-list"></i>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">Loading Document...</p>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW reg fail:', err));
+        }
+    </script>
+</body>
+</html>
